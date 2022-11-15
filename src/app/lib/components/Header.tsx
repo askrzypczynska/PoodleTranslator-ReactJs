@@ -40,6 +40,7 @@ const HeaderContainer = styled.div`
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+    border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 `
 
 const LogoContainer = styled.div`

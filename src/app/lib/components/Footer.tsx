@@ -32,6 +32,7 @@ const FooterContainer = styled.div`
     padding: 0 15px;
     justify-content: space-between;
     background-color: ${({ theme }) => theme.colors.foreground};
+    border-top: 1px solid ${({ theme }) => theme.colors.border};
 `
 
 const PoodleConteiner = styled.div`

@@ -5,6 +5,7 @@ export type AppTheme = {
         foreground: string,
         error: string,
         typography: string,
-        input: string
+        input: string,
+        border: string
     }
 }
