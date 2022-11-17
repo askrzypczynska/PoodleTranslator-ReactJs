@@ -8,6 +8,14 @@ export type Dictionary = {
         },
         footer: {
             libreTranslate: string
+        },
+        message: {
+            tryAgain: string
+        }
+    },
+    screen: {
+        translator: {
+            loading: string
         }
     }
 }
