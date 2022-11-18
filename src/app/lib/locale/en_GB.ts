@@ -17,7 +17,9 @@ export const en_GB: Dictionary = {
     },
     screen: {
         translator: {
-            loading: "Fetching supported languages..."
+            loading: "Fetching supported languages...",
+            error: "Something went wrong...",
+            empty: "No supported language"
         }
     }
 }

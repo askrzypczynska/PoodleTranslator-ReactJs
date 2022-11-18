@@ -13,7 +13,7 @@ export const TranslatorScreen: React.FunctionComponent = () => {
     const [languages, setLanguages] = useState<Array<Language>>([])
 
     const { isLoading, hasError, fetch: getSupportedLanguages } = useSupportedLanguages(
-        languages => console.log(languages)
+        setLanguages
     )
 
     let FETCHED = false
@@ -37,19 +37,23 @@ export const TranslatorScreen: React.FunctionComponent = () => {
         )
     }
 
-    if (true) {
+    if (hasError) {
         return (
-            <Message 
-                withButton
-                message="Something went wrong"
-                onClick={() => getSupportedLanguages()}
-            />
+            <CenterContainer>
+                <Message 
+                    withButton
+                    message={T.screen.translator.error}
+                    onClick={() => getSupportedLanguages()}
+                />
+            </CenterContainer>
         )
     }
 
-    if (languages.length = 0) {
+    if (languages.length === 0) {
         return (
-            <Message message="No supported language"/>
+            <CenterContainer>
+                <Message message={T.screen.translator.empty}/>
+            </CenterContainer>
         )
     }
 
@@ -120,4 +124,9 @@ const FetchLoaderContainer = styled.div`
 const LoaderText = styled.div`
     color: ${({ theme }) => theme.colors.typography};
     margin-top: 10px;
+`
+
+const CenterContainer = styled.div`
+    display: flex;
+    justify-content: center;
 `
