@@ -1,67 +1,35 @@
-import {  Confidence, ExchangeLanguage, Loader, SelectLanguage, TextCounter, TextInput, Message } from "app/lib/components"
-import { useTranslations } from "app/lib/hooks"
-import { Language } from "app/lib/models/Language"
-import React, { useEffect, useState, useTransition } from "react"
+import { Confidence, ExchangeLanguage, Loader, SelectLanguage, TextCounter, TextInput } from "app/lib/components"
+import { Language, LanguageCode } from "app/lib/models/Language"
+import React, { useState } from "react"
 import styled from "styled-components"
-import { useSupportedLanguages } from "./useSupportedLanguages"
+import { SelectedLanguages } from "./types"
 
+type TranslatorScreenProps = {
+    languages: Array<Language>
+}
 
+export const TranslatorScreen: React.FunctionComponent<TranslatorScreenProps> = ({
+    languages
+}) => {
+    const [selectedLanguages, setSelectedLanguages] = useState<SelectedLanguages>({
+        source: LanguageCode.Auto,
+        target: LanguageCode.English
+    })
 
-export const TranslatorScreen: React.FunctionComponent = () => {
-    const T = useTranslations()
-    
-    const [languages, setLanguages] = useState<Array<Language>>([])
-
-    const { isLoading, hasError, fetch: getSupportedLanguages } = useSupportedLanguages(
-        setLanguages
-    )
-
-    let FETCHED = false
-    
-    useEffect(() => {
-        if(!FETCHED) getSupportedLanguages();
-        FETCHED = true;
-    }, [])
-
-    FETCHED = false;
-
-    if (isLoading) {
-        return (
-            <FetchLoaderContainer>
-                <Loader>
-                    <LoaderText>
-                        {T.screen.translator.loading}
-                    </LoaderText>
-                </Loader>
-            </FetchLoaderContainer>
-        )
-    }
-
-    if (hasError) {
-        return (
-            <CenterContainer>
-                <Message 
-                    withButton
-                    message={T.screen.translator.error}
-                    onClick={() => getSupportedLanguages()}
-                />
-            </CenterContainer>
-        )
-    }
-
-    if (languages.length === 0) {
-        return (
-            <CenterContainer>
-                <Message message={T.screen.translator.empty}/>
-            </CenterContainer>
-        )
-    }
-
-    return(
+    return (
         <Container>
         <TranslatorContainer>
                 <InputContainer>
-                    <SelectLanguage />
+                    <SelectLanguage 
+                        languages={languages}
+                        exclude={[selectedLanguages.target]}
+                        onChange={newCode => setSelectedLanguages(prevState => ({
+                            ...prevState,
+                            source: newCode
+                        }))}
+                        selectedLanguage={selectedLanguages.source}
+
+                    />
                     <TextInput />
                     <LoaderContainer>
                         <Loader />
@@ -71,9 +39,23 @@ export const TranslatorScreen: React.FunctionComponent = () => {
                         <TextCounter />
                     </InputFooter>
                 </InputContainer>
-                <ExchangeLanguage />
+                <ExchangeLanguage 
+                    hidden={selectedLanguages.source === LanguageCode.Auto}
+                    onClick={() => setSelectedLanguages(prevState => ({
+                        source: prevState.target,
+                        target: prevState.source
+                    }))}
+                />
                 <InputContainer>
-                    <SelectLanguage />
+                    <SelectLanguage 
+                        languages={languages}
+                        exclude={[selectedLanguages.source, LanguageCode.Auto]}
+                        onChange={newCode => setSelectedLanguages(prevState => ({
+                            ...prevState,
+                            target: newCode
+                        }))}
+                        selectedLanguage={selectedLanguages.target}
+                    />
                     <TextInput />
                     <LoaderContainer>
                         <Loader />
@@ -113,20 +95,4 @@ const InputFooter = styled.div`
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-`
-
-const FetchLoaderContainer = styled.div`
-    width: 50%;
-    align-self: center;
-    display: flex;
-`
-
-const LoaderText = styled.div`
-    color: ${({ theme }) => theme.colors.typography};
-    margin-top: 10px;
-`
-
-const CenterContainer = styled.div`
-    display: flex;
-    justify-content: center;
 `
