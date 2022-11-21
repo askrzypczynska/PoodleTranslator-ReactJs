@@ -1,6 +1,6 @@
 import { APP_CONFIG } from "app/lib/config"
 import { useTranslations } from "app/lib/hooks"
-import { Language, LanguageCode } from "app/lib/models/Language"
+import { AutoDetectedLanguage, Language, LanguageCode } from "app/lib/models"
 import { useState } from "react"
 
 export const useSupportedLanguages = (
@@ -45,4 +45,48 @@ export const useSupportedLanguages = (
                 
         }
     }
+}
+
+export const useAutoDetectLanguage = (
+    onSuccess: (autoDetectedLanguage: AutoDetectedLanguage) => void
+) => {
+    const [isLoading, setLoading] = useState<boolean>(false)
+    const [hasError, setHasError] = useState<boolean>(false)
+
+    return {
+        isLoading,
+        hasError,
+        fetch: (query: string) => {
+            setLoading(true)
+            setHasError(false)
+
+            fetch(`${APP_CONFIG.API_URL}/detect`, {
+                method: "POST",
+                body: JSON.stringify({
+                    q: query
+                }),
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response
+                    }
+
+                    throw response
+                })
+                .then(response => response.json())
+                .then(([autoDetectedLanguage]) => onSuccess(autoDetectedLanguage)
+                )
+                .catch(() => {
+                    setHasError(true)
+                })
+                .finally(() => {
+                    setLoading(false)
+                })
+                
+        }
+    }
+
 }
