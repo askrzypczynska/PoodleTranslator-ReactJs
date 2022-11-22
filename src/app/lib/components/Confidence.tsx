@@ -1,6 +1,8 @@
+import React, { useCallback } from "react"
 import styled from "styled-components"
 import { useTranslations } from "../hooks"
-import { AutoDetectedLanguage } from "../models"
+import { AutoDetectedLanguage, LanguageCode } from "../models"
+
 
 type LanguageProps = {
     disabled: boolean
@@ -19,6 +21,20 @@ export const Confidence: React.FunctionComponent<ConfidenceProps> = ({
 }) => {
     const T = useTranslations()
     const { confidence, language } = autoDetectedLanguage
+    const getDetectedLanguage = useCallback( () => {
+        if (!language){
+            return undefined
+        }
+        const [detectedLanguage] = Object
+            .entries(LanguageCode)
+            .find(([, languageCode]) => language === languageCode) || []
+        
+        return detectedLanguage
+            ? `(${detectedLanguage})`
+            : undefined
+
+
+    }, [language])
 
     return (
         <Container>
@@ -34,7 +50,7 @@ export const Confidence: React.FunctionComponent<ConfidenceProps> = ({
                 disabled={hasError}
             >
                 {hasError && T.components.confidence.error}
-                {language && `(${language})`}
+                {language && getDetectedLanguage()}
             </Language>
         </Container>
     )
