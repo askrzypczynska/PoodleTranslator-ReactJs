@@ -17,7 +17,7 @@ export const App = () => {
     let FETCHED = false
     
     useEffect(() => {
-        if(!FETCHED) getSupportedLanguages();
+        if(!FETCHED) getSupportedLanguages({});
         FETCHED = true;
     }, [])
 
@@ -42,7 +42,7 @@ export const App = () => {
                     <Message 
                         withButton
                         message={T.components.app.error}
-                        onClick={() => getSupportedLanguages()}
+                        onClick={() => getSupportedLanguages({})}
                     />
                 </CenterContainer>
             )
