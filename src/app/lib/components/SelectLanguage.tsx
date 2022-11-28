@@ -15,40 +15,61 @@ export const SelectLanguage: React.FunctionComponent<SelectLanguageProps> = ({
     exclude,
     onChange
 }) => {
-
-    const filteredLanguages = useMemo( ()=> languages
-        .filter(language => !exclude.includes( language.code ))
+    const filteredLangauges = useMemo(() => languages
+        .filter(language => !exclude.includes(language.code))
         .map(languages => ({
             key: languages.code,
             label: languages.name
         })),
-        [languages, exclude])
+        [languages, exclude]
+    )
 
     return (
-        <Select
-            value={selectedLanguage}
-            onChange={event => onChange(event.target.value as LanguageCode)}
-        >
-            {filteredLanguages.map(language => (
-                <Option 
-                    key={language.key}
-                    value={language.key}
-                >
-                    {language.label}
-                </Option>
-            ))}
-        </Select>
+        <SelectContainer>
+            <Select
+                value={selectedLanguage}
+                onChange={event => onChange(event.target.value as LanguageCode)}
+            >
+                {filteredLangauges.map(language => (
+                    <Option
+                        key={language.key}
+                        value={language.key}
+                    >
+                        {language.label}
+                    </Option>
+                ))}
+            </Select>
+        </SelectContainer>
     )
 }
 
-const Select = styled.select`
+const SelectContainer = styled.div`
+    height: 26px;
     max-width: 140px;
+    position: relative;
     margin-bottom: 10px;
-    // -webkit-appearance: none;
-    border: 1px solid ${({ theme }) => theme.colors.border};
-    border-radius: 8px;
+    
+    &:after {
+        width: 0;
+        height: 0;
+        content: '';
+        position: absolute;
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 4px solid ${({ theme }) => theme.colors.typography};
+        right: 10px;
+        top: calc(50% - 2px);
+    }
+`
+
+const Select = styled.select`
+    width: 100%;
+    margin-bottom: 10px;
+    -webkit-appearance: none;
+    border: 0;
     font-size: 14px;
     font-weight: bold;
+    border-radius: 8px;
     background-color: ${({ theme }) => theme.colors.foreground};
     color: ${({ theme }) => theme.colors.typography};
     height: 26px;

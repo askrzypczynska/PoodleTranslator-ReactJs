@@ -7,5 +7,8 @@ export type AppTheme = {
         typography: string,
         input: string,
         border: string
+    },
+    media: {
+        sm: number
     }
 }

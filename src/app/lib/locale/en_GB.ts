@@ -28,7 +28,7 @@ export const en_GB: Dictionary = {
     },
     screens: {
         translator: {
-            sourceInputPlaceholder: "Type_Text here..."
+            sourceInputPlaceholder: "Type Text here..."
         }
     }
 }

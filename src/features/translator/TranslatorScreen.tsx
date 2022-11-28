@@ -1,12 +1,11 @@
-import { Confidence, ExchangeLanguage, Loader, SelectLanguage, TextCounter, TextInput } from "app/lib/components"
-import { useDebouncedCallback } from "use-debounce"
-import { APP_CONFIG } from "app/lib/config"
-import { useTranslations } from "app/lib/hooks"
-import { useAutoDetectLanguage, useTranslateText } from "./actions"
-import { AutoDetectedLanguage, Language, LanguageCode } from "app/lib/models"
-import React, { useState } from "react"
+import React from "react"
 import styled from "styled-components"
-import { SelectedLanguages } from "./types"
+import { Confidence, ExchangeLanguage, Loader, SelectLanguage, TextCounter, TextInput } from "app/lib/components"
+import { Language, LanguageCode } from "app/lib/models"
+import { useTranslations } from "app/lib/hooks"
+import { APP_CONFIG } from "app/lib/config"
+import { useLibreTranslate } from "./useLibreTranslate"
+
 
 type TranslatorScreenProps = {
     languages: Array<Language>
@@ -16,60 +15,46 @@ export const TranslatorScreen: React.FunctionComponent<TranslatorScreenProps> = 
     languages
 }) => {
     const T = useTranslations()
-    const [translatedText, setTranslatedText] = useState<string>("")
-    const [query, setQuery] = useState<string>("")
-    const [autoDetectedLanguage, setAutoDetectedLanguage] = useState<AutoDetectedLanguage>()
-    const [selectedLanguages, setSelectedLanguages] = useState<SelectedLanguages>({
-        source: LanguageCode.Auto,
-        target: LanguageCode.English
-    })
-const { isLoading: 
-    isDetectingLanguage, 
-    hasError: hasErrorDetectingLanguage, 
-    fetch: autoDetectLanguage
-} = useAutoDetectLanguage(setAutoDetectedLanguage)
-const {
-    isLoading: isTranslatingText,
-    hasError: hasErrorTranslatingText,
-    fetch: translateText
-} = useTranslateText(setTranslatedText)
-const debounceAction = useDebouncedCallback(
-    debouncedQuery => {
-        if (debouncedQuery.length < 3){
-            return
-        }
-
-        selectedLanguages.source === LanguageCode.Auto
-            ? autoDetectLanguage(debouncedQuery)
-            : translateText(debouncedQuery, selectedLanguages)
-    },
-    1000
-)
+    const {
+        query,
+        setQuery,
+        isTranslatingText,
+        translatedText,
+        autoDetectedLanguage,
+        hasErrorTranslatingText,
+        isDetectingLanguage,
+        hasErrorDetectingLanguage,
+        debouncedAction,
+        setTranslatedText,
+        selectedLanguages,
+        setSelectedLanguages,
+        setAutoDetectedLanguage
+    } = useLibreTranslate()
 
     return (
+
         <Container>
-        <TranslatorContainer>
+            <TranslatorContainer>
                 <InputContainer>
-                    <SelectLanguage 
+                    <SelectLanguage
                         languages={languages}
                         exclude={[selectedLanguages.target]}
+                        selectedLanguage={selectedLanguages.source}
                         onChange={newCode => setSelectedLanguages(prevState => ({
                             ...prevState,
                             source: newCode
                         }))}
-                        selectedLanguage={selectedLanguages.source}
-
                     />
-                    <TextInput 
+                    <TextInput
                         autoFocus
                         value={query}
                         onChangeText={newQuery => {
-                            if (newQuery.length > APP_CONFIG.TEXT_INPUT_LIMIT){
+                            if (newQuery.length > APP_CONFIG.TEXT_INPUT_LIMIT) {
                                 return
                             }
 
                             setQuery(newQuery)
-                            debounceAction(newQuery)
+                            debouncedAction()
                         }}
                         placeholder={T.screens.translator.sourceInputPlaceholder}
                     />
@@ -79,31 +64,37 @@ const debounceAction = useDebouncedCallback(
                         )}
                     </LoaderContainer>
                     <InputFooter>
-                        <Confidence 
+                        <Confidence
                             hasError={hasErrorDetectingLanguage && selectedLanguages.source === LanguageCode.Auto}
                             autoDetectedLanguage={autoDetectedLanguage}
-                            onClick={() => {setSelectedLanguages(prevState => ({
-                                ...prevState,
-                                source: autoDetectedLanguage?.language as LanguageCode
+                            onClick={() => {
+                                setSelectedLanguages(prevState => ({
+                                    ...prevState,
+                                    source: autoDetectedLanguage?.language as LanguageCode
                                 }))
                                 setAutoDetectedLanguage(undefined)
+                                debouncedAction()
                             }}
                         />
-                        <TextCounter 
+                        <TextCounter
                             counter={query.length}
                             limit={APP_CONFIG.TEXT_INPUT_LIMIT}
-                            />
+                        />
                     </InputFooter>
                 </InputContainer>
-                <ExchangeLanguage 
+                <ExchangeLanguage
                     hidden={selectedLanguages.source === LanguageCode.Auto}
-                    onClick={() => setSelectedLanguages(prevState => ({
-                        source: prevState.target,
-                        target: prevState.source
-                    }))}
+                    onClick={() => {
+                        setSelectedLanguages(prevState => ({
+                            source: prevState.target,
+                            target: prevState.source
+                        }))
+                        setQuery('')
+                        setTranslatedText('')
+                    }}
                 />
                 <InputContainer>
-                    <SelectLanguage 
+                    <SelectLanguage
                         languages={languages}
                         exclude={[selectedLanguages.source, LanguageCode.Auto]}
                         onChange={newCode => setSelectedLanguages(prevState => ({
@@ -112,7 +103,7 @@ const debounceAction = useDebouncedCallback(
                         }))}
                         selectedLanguage={selectedLanguages.target}
                     />
-                    <TextInput 
+                    <TextInput
                         disabled
                         value={translatedText}
                         hasError={hasErrorTranslatingText}
@@ -123,7 +114,7 @@ const debounceAction = useDebouncedCallback(
                         )}
                     </LoaderContainer>
                 </InputContainer>
-        </TranslatorContainer>
+            </TranslatorContainer>
         </Container>
     )
 }
@@ -138,20 +129,25 @@ const Container = styled.div`
 const TranslatorContainer = styled.div`
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: space-around;
     margin-top: 50px;
+    @media(min-width: ${({ theme }) => theme.media.sm}px) {
+        justify-content: center;
+    }
+    @media(max-width: ${({ theme }) => theme.media.sm}px) {
+        flex-direction: column;
+        align-items: center;
+    }
 `
 
 const InputContainer = styled.div`
-    display:flex;
+    display: flex;
     flex-direction: column;
-    padding: 0 5px;
-    margin: 0px 3%;
 `
 
 const LoaderContainer = styled.div`
-    padding: 10px;
-    height: 2px
+    padding: 5px 10px;
+    height: 2px;
 `
 
 const InputFooter = styled.div`
